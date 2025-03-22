@@ -1,5 +1,5 @@
 "use client"
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PlayerForm from './PlayerForm';
 import PlayerList from './PlayerList';
 import DeleteConfirmationModal from '../shared/DeleteConfirmationModal';
@@ -17,20 +17,48 @@ export default function PlayerManagement() {
   const [playerToDelete, setPlayerToDelete] = useState<Player | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  const handleAddPlayer = (player: Omit<Player, 'id'>) => {
-    const newPlayer = {
-      ...player,
-      id: Math.random().toString(36).substr(2, 9),
-    };
-    setPlayers([...players, newPlayer]);
+  useEffect(() => {
+    fetchPlayers();
+  }, []);
+
+  const fetchPlayers = async () => {
+    try {
+      const response = await fetch('/api/players');
+      const data = await response.json();
+      if (response.ok) {
+        setPlayers(data.data);
+      } else {
+        console.error('Failed to fetch players:', data.error);
+      }
+    } catch (error) {
+      console.error('An error occurred:', error);
+    }
   };
 
-  const handleEditPlayer = (updatedPlayer: Omit<Player, 'id'> | Player) => {
-    if ('id' in updatedPlayer) {
-      setPlayers(players.map(p => 
-        p.id === updatedPlayer.id ? updatedPlayer : p
-      ));
-      setEditingPlayer(null);
+  const handleAddPlayer = (player: Player) => {
+    setPlayers([...players, player]);
+  };
+
+  const handleEditPlayer = async (updatedPlayer: Player) => {
+    try {
+      const response = await fetch(`/api/players/${updatedPlayer.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedPlayer),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setPlayers(players.map(p => 
+          p.id === updatedPlayer.id ? data.data : p
+        ));
+        setEditingPlayer(null);
+      } else {
+        console.error('Failed to update player:', data.error);
+      }
+    } catch (error) {
+      console.error('An error occurred:', error);
     }
   };
 
@@ -39,11 +67,23 @@ export default function PlayerManagement() {
     setIsDeleteModalOpen(true);
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (playerToDelete) {
-      setPlayers(players.filter(p => p.id !== playerToDelete.id));
-      setIsDeleteModalOpen(false);
-      setPlayerToDelete(null);
+      try {
+        const response = await fetch(`/api/players/${playerToDelete.id}`, {
+          method: 'DELETE',
+        });
+        if (response.ok) {
+          setPlayers(players.filter(p => p.id !== playerToDelete.id));
+          setIsDeleteModalOpen(false);
+          setPlayerToDelete(null);
+        } else {
+          const data = await response.json();
+          console.error('Failed to delete player:', data.error);
+        }
+      } catch (error) {
+        console.error('An error occurred:', error);
+      }
     }
   };
 

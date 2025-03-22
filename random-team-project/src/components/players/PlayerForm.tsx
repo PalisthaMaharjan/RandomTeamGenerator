@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
 import type { Player } from './PlayerManagement';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
 
 interface PlayerFormProps {
-  onSubmit: (player: Omit<Player, 'id'> | Player) => void;
+  onSubmit: (player: Player) => void;
   initialData?: Player | null;
   onCancel?: () => void;
 }
@@ -12,6 +10,7 @@ interface PlayerFormProps {
 export default function PlayerForm({ onSubmit, initialData, onCancel }: PlayerFormProps) {
   const [name, setName] = useState('');
   const [skillLevel, setSkillLevel] = useState(1);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (initialData) {
@@ -20,12 +19,31 @@ export default function PlayerForm({ onSubmit, initialData, onCancel }: PlayerFo
     }
   }, [initialData]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(initialData ? { ...initialData, name, skillLevel } : { name, skillLevel });
-    if (!initialData) {
-      setName('');
-      setSkillLevel(1);
+    setLoading(true);
+    try {
+      debugger;
+      const response = await fetch('/api/players', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, skillLevel }),
+      });
+      const data = await response.json();
+      debugger;
+      if (response.ok) {
+        onSubmit(data.data);
+        setName('');
+        setSkillLevel(1);
+      } else {
+        console.error('Failed to add player:', data.error);
+      }
+    } catch (error) {
+      console.error('An error occurred:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -40,7 +58,7 @@ export default function PlayerForm({ onSubmit, initialData, onCancel }: PlayerFo
           <label htmlFor="name" className="block text-sm font-medium text-gray-700">
             Name
           </label>
-          <Input
+          <input
             type="text"
             id="name"
             value={name}
@@ -62,7 +80,7 @@ export default function PlayerForm({ onSubmit, initialData, onCancel }: PlayerFo
                 onClick={() => setSkillLevel(level)}
                 className={`w-10 h-10 rounded-full ${
                   skillLevel === level
-                    ? 'bg-[#282a74] text-white'
+                    ? 'bg-blue-500 text-white'
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 }`}
               >
@@ -73,21 +91,22 @@ export default function PlayerForm({ onSubmit, initialData, onCancel }: PlayerFo
         </div>
 
         <div className="flex gap-4 mt-6">
-          <Button
+          <button
             type="submit"
-            className="bg-[#282a74] text-white px-4 py-2 rounded-md hover:bg-[#282a74] focus:outline-none focus:ring-2 focus:ring-[#282a74] focus:ring-offset-2"
+            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            disabled={loading}
           >
-            {initialData ? 'Save Changes' : 'Add Player'}
-          </Button>
+            {loading ? 'Saving...' : initialData ? 'Save Changes' : 'Add Player'}
+          </button>
           
           {onCancel && (
-            <Button
+            <button
               type="button"
               onClick={onCancel}
               className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
             >
               Cancel
-            </Button>
+            </button>
           )}
         </div>
       </div>

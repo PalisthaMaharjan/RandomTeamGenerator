@@ -2,7 +2,8 @@ const FeaturesSection = () => {
   return (
       <>
       
-     <section className="grid md:grid-cols-3 gap-8">
+     <section className="container mx-auto">
+      <div className="grid md:grid-cols-3 gap-8">
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="text-xl font-semibold mb-3">Player Management</h3>
           <p className="text-gray-600">
@@ -20,6 +21,7 @@ const FeaturesSection = () => {
           <p className="text-gray-600">
             Create teams of any size to match your needs
           </p>
+        </div>
         </div>
       </section>
       </>
