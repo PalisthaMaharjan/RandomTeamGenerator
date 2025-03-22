@@ -14,18 +14,16 @@ export default function GeneratedTeams({ result, onClose }: GeneratedTeamsProps)
     0
   );
 
+  const generateUniqueId = () => {
+    return Math.random().toString(36).substring(2, 15);
+  };
+
   const handleShare = async () => {
-    const shareText = `
-${result.title}
-Generated Teams (${totalPlayers} players)
-${result.teams.map(team => `
-${team.name} (Avg. Skill: ${team.averageSkill.toFixed(1)})
-${team.players.map(p => `- ${p.name} (Skill: ${p.skillLevel})`).join('\n')}
-`).join('\n')}
-    `.trim();
+    const uniqueId = generateUniqueId();
+    const teamUrl = `https://generateteamintuji.com/team-${uniqueId}`;
 
     try {
-      await navigator.clipboard.writeText(shareText);
+      await navigator.clipboard.writeText(teamUrl);
       setShowCopied(true);
       setTimeout(() => setShowCopied(false), 2000);
     } catch (err) {
@@ -33,9 +31,28 @@ ${team.players.map(p => `- ${p.name} (Skill: ${p.skillLevel})`).join('\n')}
     }
   };
 
+//   const handleShare = async () => {
+//     const shareText = `
+// ${result.title}
+// Generated Teams (${totalPlayers} players)
+// ${result.teams.map(team => `
+// ${team.name} (Avg. Skill: ${team.averageSkill.toFixed(1)})
+// ${team.players.map(p => `- ${p.name} (Skill: ${p.skillLevel})`).join('\n')}
+// `).join('\n')}
+//     `.trim();
+
+//     try {
+//       await navigator.clipboard.writeText(shareText);
+//       setShowCopied(true);
+//       setTimeout(() => setShowCopied(false), 2000);
+//     } catch (err) {
+//       console.error('Failed to copy:', err);
+//     }
+//   };
+
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
-      <div className="bg-blue-500 text-white px-6 py-4">
+      <div className="bg-[#282a74] text-white px-6 py-4">
         <div className="flex justify-between items-start">
           <div>
             <h2 className="text-xl font-semibold">{result.title}</h2>
