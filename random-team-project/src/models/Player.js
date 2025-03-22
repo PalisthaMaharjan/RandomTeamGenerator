@@ -17,11 +17,15 @@
 // export default mongoose.models.Player || mongoose.model('Player', PlayerSchema); 
 
 // models/Player.ts
+
+
 import mongoose, { Schema } from 'mongoose';
 
 const PlayerSchema = new Schema({
-  name: { type: String, required: true },
-  skillLevel: { type: Number, required: true, min: 1, max: 5 },
+  name: String,
+  skillLevel: Number,
 });
 
-export default mongoose.models.Player || mongoose.model('Player', PlayerSchema);
+const Player = mongoose.models.Player || mongoose.model('Player', PlayerSchema);
+
+export default Player;
