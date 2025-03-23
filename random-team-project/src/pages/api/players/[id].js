@@ -1,6 +1,5 @@
-
 import Player from '../../../models/Player';
-import dbConnect from '../../../utils/dbConnect';
+import connectMongoDB from "../../../utils/dbConnect";
 
 export default async function handler(req, res) {
   const {
@@ -8,7 +7,7 @@ export default async function handler(req, res) {
     method,
   } = req;
 
-  await dbConnect();
+  await connectMongoDB();
 
   switch (method) {
     case 'PUT':
@@ -27,7 +26,7 @@ export default async function handler(req, res) {
       break;
     case 'DELETE':
       try {
-        const deletedPlayer = await Player.deleteOne({ _id: id });
+        const deletedPlayer = await Player.findByIdAndDelete(id);
         if (!deletedPlayer) {
           return res.status(404).json({ success: false, error: 'Player not found' });
         }
@@ -40,4 +39,4 @@ export default async function handler(req, res) {
       res.setHeader('Allow', ['PUT', 'DELETE']);
       res.status(405).end(`Method ${method} Not Allowed`);
   }
-} 
+}

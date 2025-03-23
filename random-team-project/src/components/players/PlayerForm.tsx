@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import type { Player } from './PlayerManagement';
+import { Input } from '../ui/input';
 
 interface PlayerFormProps {
-  onSubmit: (player: Player) => void;
+
+  onSubmit: (team: Omit<Player, '_id'> | Player) => Promise<void>;
   initialData?: Player | null;
   onCancel?: () => void;
 }
@@ -19,29 +21,23 @@ export default function PlayerForm({ onSubmit, initialData, onCancel }: PlayerFo
     }
   }, [initialData]);
 
+  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+  
     try {
-      debugger;
-      const response = await fetch('/api/players', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name, skillLevel }),
-      });
-      const data = await response.json();
-      debugger;
-      if (response.ok) {
-        onSubmit(data.data);
+      await onSubmit(
+        initialData ? { ...initialData, name, skillLevel } : { name, skillLevel }
+      );
+  
+      if (!initialData) {
         setName('');
         setSkillLevel(1);
-      } else {
-        console.error('Failed to add player:', data.error);
       }
     } catch (error) {
-      console.error('An error occurred:', error);
+      console.error('Error in handleSubmit:', error);
     } finally {
       setLoading(false);
     }
@@ -58,12 +54,12 @@ export default function PlayerForm({ onSubmit, initialData, onCancel }: PlayerFo
           <label htmlFor="name" className="block text-sm font-medium text-gray-700">
             Name
           </label>
-          <input
+          <Input
             type="text"
             id="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#282a74] focus:ring-"
             required
           />
         </div>
@@ -80,7 +76,7 @@ export default function PlayerForm({ onSubmit, initialData, onCancel }: PlayerFo
                 onClick={() => setSkillLevel(level)}
                 className={`w-10 h-10 rounded-full ${
                   skillLevel === level
-                    ? 'bg-blue-500 text-white'
+                    ? 'bg-[#282a74] text-white'
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 }`}
               >
@@ -93,7 +89,7 @@ export default function PlayerForm({ onSubmit, initialData, onCancel }: PlayerFo
         <div className="flex gap-4 mt-6">
           <button
             type="submit"
-            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="bg-[#282a74] text-white px-4 py-2 rounded-md hover:bg-[#282a74] focus:outline-none focus:ring-2 focus:ring-[#282a74] focus:ring-offset-2"
             disabled={loading}
           >
             {loading ? 'Saving...' : initialData ? 'Save Changes' : 'Add Player'}

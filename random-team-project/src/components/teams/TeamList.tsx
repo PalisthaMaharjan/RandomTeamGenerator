@@ -18,7 +18,7 @@ export default function TeamList({ teams, onEdit, onDelete }: TeamListProps) {
           <div className="space-y-4">
             {teams.map((team) => (
               <div
-                key={team.id}
+                key={team._id}
                 className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
               >
                 <span className="font-medium">{team.name}</span>

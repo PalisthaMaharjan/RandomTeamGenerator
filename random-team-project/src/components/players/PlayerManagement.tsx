@@ -6,7 +6,7 @@ import DeleteConfirmationModal from '../shared/DeleteConfirmationModal';
 
 
 export interface Player {
-  id: string;
+  _id: string;
   name: string;
   skillLevel: number;
 }
@@ -17,31 +17,68 @@ export default function PlayerManagement() {
   const [playerToDelete, setPlayerToDelete] = useState<Player | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
+
   useEffect(() => {
-    fetchPlayers();
+    // Fetch players from the API
+    const fetchPlayers = async () => {
+      try {
+        const response = await fetch("/api/players");
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            const mappedPlayers: Player[] = data.data.map((player:Player) => ({
+              _id: player._id,
+              name: player.name,
+              skillLevel: player.skillLevel
+            }));
+            setPlayers(mappedPlayers); 
+          } else {
+            console.error("Failed to fetch teams:", data.message);
+        
+          }
+        } else {
+          console.error("Failed to fetch teams. Status:", response.status);
+          
+        }
+      } catch (error) {
+        console.error("Error fetching teams:", error);
+        
+      }
+    };
+
+    fetchPlayers(); 
   }, []);
 
-  const fetchPlayers = async () => {
+    const handleAddPlayer = async (newPlayer: Omit<Player, "_id">) => {
     try {
-      const response = await fetch('/api/players');
-      const data = await response.json();
+      const response = await fetch('/api/players', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newPlayer),
+      });
+      
       if (response.ok) {
-        setPlayers(data.data);
+        const data = await response.json();
+        setPlayers([...players, { ...newPlayer, _id: data.data._id }]);
+      
       } else {
-        console.error('Failed to fetch players:', data.error);
+        console.error('Failed to add player:');
       }
     } catch (error) {
       console.error('An error occurred:', error);
     }
   };
 
-  const handleAddPlayer = (player: Player) => {
-    setPlayers([...players, player]);
-  };
 
-  const handleEditPlayer = async (updatedPlayer: Player) => {
+    const handleEditPlayer= async (updatedPlayer: Player | Omit<Player, "_id">) => {
     try {
-      const response = await fetch(`/api/players/${updatedPlayer.id}`, {
+      if (!("_id" in updatedPlayer)) {
+        console.error("Team ID is missing");
+        return;
+      }
+      const response = await fetch(`/api/players/${updatedPlayer._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -50,9 +87,10 @@ export default function PlayerManagement() {
       });
       const data = await response.json();
       if (response.ok) {
-        setPlayers(players.map(p => 
-          p.id === updatedPlayer.id ? data.data : p
-        ));
+      
+        setPlayers(
+          players.map((player) => (player._id === updatedPlayer._id ? updatedPlayer : player))
+        );
         setEditingPlayer(null);
       } else {
         console.error('Failed to update player:', data.error);
@@ -62,29 +100,35 @@ export default function PlayerManagement() {
     }
   };
 
+
   const handleDeleteClick = (player: Player) => {
     setPlayerToDelete(player);
     setIsDeleteModalOpen(true);
   };
 
-  const handleDeleteConfirm = async () => {
+  const handleDeleteConfirm = () => {
     if (playerToDelete) {
-      try {
-        const response = await fetch(`/api/players/${playerToDelete.id}`, {
-          method: 'DELETE',
-        });
-        if (response.ok) {
-          setPlayers(players.filter(p => p.id !== playerToDelete.id));
-          setIsDeleteModalOpen(false);
-          setPlayerToDelete(null);
-        } else {
-          const data = await response.json();
-          console.error('Failed to delete player:', data.error);
-        }
-      } catch (error) {
-        console.error('An error occurred:', error);
-      }
+      handleDeletePlayer(playerToDelete);
     }
+  };
+
+  const handleDeletePlayer= async (playerToDelete: Player) => {
+    try {
+      const response = await fetch(`/api/players/${playerToDelete._id}`, {
+        method: "DELETE",
+      });
+  
+      if (response.ok) {
+        setPlayers(players.filter((player) => player._id !== playerToDelete._id));
+        setIsDeleteModalOpen(false);
+        setPlayerToDelete(null);
+      } else {
+        console.error("Failed to delete team");
+      }
+    } catch (error) {
+      console.error("There was an error deleting the team:", error);
+    }
+    
   };
 
   return (

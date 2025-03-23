@@ -35,7 +35,7 @@ ${team.players.map(p => `- ${p.name} (Skill: ${p.skillLevel})`).join('\n')}
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
-      <div className="bg-blue-500 text-white px-6 py-4">
+      <div className="bg-[#282a74] text-white px-6 py-4">
         <div className="flex justify-between items-start">
           <div>
             <h2 className="text-xl font-semibold">{result.title}</h2>
@@ -66,7 +66,7 @@ ${team.players.map(p => `- ${p.name} (Skill: ${p.skillLevel})`).join('\n')}
       <div className="p-6 grid gap-6 md:grid-cols-2">
         {result.teams.map((team) => (
           <div
-            key={team.id}
+            key={team._id}
             className="border rounded-lg p-4 space-y-4"
           >
             <div className="flex justify-between items-center border-b pb-2">
@@ -84,7 +84,7 @@ ${team.players.map(p => `- ${p.name} (Skill: ${p.skillLevel})`).join('\n')}
             <ul className="space-y-2">
               {team.players.map((player) => (
                 <li
-                  key={player.id}
+                  key={player._id}
                   className="flex justify-between items-center p-2 hover:bg-gray-50 rounded"
                 >
                   <span>{player.name}</span>
@@ -94,7 +94,7 @@ ${team.players.map(p => `- ${p.name} (Skill: ${p.skillLevel})`).join('\n')}
                         key={level}
                         className={`w-4 h-4 rounded-full ${
                           level <= player.skillLevel
-                            ? 'bg-blue-500'
+                            ? 'bg-[#282a74]'
                             : 'bg-gray-200'
                         }`}
                       />
